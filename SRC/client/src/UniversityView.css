@@ -1,0 +1,120 @@
+.university-view {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.university-view h2 {
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+}
+
+.university-selector {
+    margin: 20px auto;
+    width: 80%;
+}
+
+.university-dropdown {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.university-dropdown:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.error-message {
+    color: #dc3545;
+    padding: 10px;
+    margin: 10px auto;
+    background-color: #f8d7da;
+    border-radius: 4px;
+    text-align: center;
+    max-width: 80%;
+}
+
+.programs-table-container {
+    margin: 20px auto;
+    width: 80%;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.programs-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.programs-table th,
+.programs-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.programs-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.programs-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.add-program-form {
+    margin: 20px auto;
+    width: 80%;
+    display: flex;
+    gap: 10px;
+}
+
+.add-program-form form {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.program-input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.add-button {
+    padding: 8px 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-button {
+    padding: 4px 8px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.add-button:hover {
+    background-color: #218838;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+} 

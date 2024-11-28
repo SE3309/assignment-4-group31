@@ -108,6 +108,67 @@ app.get('/api/universities/:id/courses', async (req, res) => {
 // Global connection variable
 let connection;
 
+app.post('/api/students/register', async (req, res) => {
+    try {
+        const { firstName, lastName, email, currentHighSchool, gradYear, biography } = req.body;
+
+        // Get the last StudentID
+        const [lastStudent] = await pool.query('SELECT StudentID FROM student ORDER BY StudentID DESC LIMIT 1');
+        const nextStudentId = lastStudent.length > 0 ? parseInt(lastStudent[0].StudentID) + 1 : 1;
+
+        // Start a transaction
+        await pool.query('START TRANSACTION');
+
+        // Insert into student table
+        await pool.query(
+            'INSERT INTO student (StudentID, FirstName, LastName, Address, Biography) VALUES (?, ?, ?, ?, ?)',
+            [nextStudentId, firstName, lastName, email, biography]
+        );
+
+        // Insert into highschoolstudent table
+        await pool.query(
+            'INSERT INTO highschoolstudent (StudentID, CurrentHighSchool, GradYear) VALUES (?, ?, ?)',
+            [nextStudentId, currentHighSchool, gradYear]
+        );
+
+        // Commit the transaction
+        await pool.query('COMMIT');
+
+        res.json({
+            success: true,
+            studentId: nextStudentId,
+            message: 'Registration successful'
+        });
+    } catch (error) {
+        // Rollback in case of error
+        await pool.query('ROLLBACK');
+        console.error('Registration error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error during registration'
+        });
+    }
+});
+
+app.get('/api/highschools', async (req, res) => {
+    try {
+        const [highSchools] = await pool.query(
+            'SELECT DISTINCT CurrentHighSchool FROM highSchoolStudent ORDER BY CurrentHighSchool'
+        );
+        
+        res.json({
+            success: true,
+            highSchools
+        });
+    } catch (error) {
+        console.error('Error fetching high schools:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching high schools'
+        });
+    }
+});
+
 // Initialize database and start server
 async function startServer() {
     try {

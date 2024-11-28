@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import './Admin.css';
 import UniversityView from './UniversityView';
+import { useNavigate } from 'react-router-dom';
 
 function Admin() {
+    const navigate = useNavigate();
     const [idSearch, setIdSearch] = useState('');
     const [nameSearch, setNameSearch] = useState('');
     const [searchResults, setSearchResults] = useState(null);
@@ -42,6 +44,15 @@ function Admin() {
         setError('');
     };
 
+    const handleLogout = () => {
+        // Clear any stored data if needed
+        // localStorage.clear();
+        // sessionStorage.clear();
+        
+        // Navigate back to login page
+        navigate('/');
+    };
+
     return (
         <div className="admin-container">
             <header className="admin-header">
@@ -62,7 +73,7 @@ function Admin() {
                     <button onClick={handleClear} className="clear-button">
                         Clear
                     </button>
-                    <button onClick={() => window.location.reload()} className="logout-button">
+                    <button onClick={handleLogout} className="logout-button">
                         Logout
                     </button>
                 </div>

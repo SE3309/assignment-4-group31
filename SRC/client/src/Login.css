@@ -86,4 +86,18 @@ button[type="submit"]:disabled {
 .message.error {
     background: #f8d7da;
     color: #721c24;
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.register-link a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
 } 

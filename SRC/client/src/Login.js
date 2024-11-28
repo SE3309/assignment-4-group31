@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Login.css';
+import { Link } from 'react-router-dom';
 
 function Login({ onLoginSuccess }) {
     const [loginType, setLoginType] = useState('student'); // 'student' or 'admin'
@@ -119,6 +120,10 @@ function Login({ onLoginSuccess }) {
                         </div>
                     )}
                 </form>
+
+                <div className="register-link">
+                    <p>New student? <Link to="/register">Register here</Link></p>
+                </div>
             </div>
         </div>
     );

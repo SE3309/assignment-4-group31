@@ -1,27 +1,30 @@
 import React, { useState } from 'react';
-import StudentTable from './StudentTable';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import Login from './Login';
 import Admin from './Admin';
-import './App.css';
+import StudentRegister from './StudentRegister';
 
 function App() {
-    const [userType, setUserType] = useState(null); // null, 'student', or 'admin'
+  const handleLoginSuccess = (isAdmin) => {
+    if (isAdmin) {
+      window.location.href = '/admin';
+    } else {
+      // Handle student login if needed
+      window.location.href = '/student-dashboard';
+    }
+  };
 
-    const handleLoginSuccess = (type) => {
-        setUserType(type);
-    };
-
-    return (
-        <div className="App">
-            {!userType ? (
-                <Login onLoginSuccess={handleLoginSuccess} />
-            ) : userType === 'admin' ? (
-                <Admin />
-            ) : (
-                <StudentTable />
-            )}
-        </div>
-    );
+  return (
+    <BrowserRouter>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/register" element={<StudentRegister />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
 }
 
 export default App;

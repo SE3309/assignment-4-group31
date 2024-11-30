@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import './StudentSearch.css';
+import { useNavigate } from 'react-router-dom';
 
 const StudentSearch = () => {
+    const navigate = useNavigate();
     const [inputValue, setInputValue] = useState('');
     const [searchType, setSearchType] = useState('name');
     const [students, setStudents] = useState([]);
@@ -28,6 +30,10 @@ const StudentSearch = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleAddExperience = (studentId) => {
+        navigate(`/add-experience/${studentId}`);
     };
 
     return (
@@ -79,6 +85,7 @@ const StudentSearch = () => {
                                     <th>First Name</th>
                                     <th>Last Name</th>
                                     <th>Address</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -88,6 +95,14 @@ const StudentSearch = () => {
                                         <td>{student.FirstName}</td>
                                         <td>{student.LastName}</td>
                                         <td>{student.Address}</td>
+                                        <td>
+                                            <button 
+                                                onClick={() => handleAddExperience(student.StudentID)}
+                                                className="add-experience-btn"
+                                            >
+                                                Add Experience
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>

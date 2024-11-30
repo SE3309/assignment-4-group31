@@ -8,6 +8,7 @@ const StudentScores = () => {
     const [studentId, setStudentId] = useState('');
     const [filteredScores, setFilteredScores] = useState([]);
     const [studentAverage, setStudentAverage] = useState(null);
+    const [studentName, setStudentName] = useState('');
 
     useEffect(() => {
         fetchScores();
@@ -35,6 +36,7 @@ const StudentScores = () => {
         if (studentId.trim() === '') {
             setFilteredScores([]);
             setStudentAverage(null);
+            setStudentName('');
             return;
         }
 
@@ -42,7 +44,12 @@ const StudentScores = () => {
             score.StudentID.toString() === studentId.trim()
         );
         
-        // Calculate student's average across all programs
+        if (filtered.length > 0) {
+            setStudentName(filtered[0].StudentName || 'Name Not Available');
+        } else {
+            setStudentName('');
+        }
+
         if (filtered.length > 0) {
             const avgScore = filtered.reduce((acc, curr) => 
                 acc + Number(curr.MaxScore), 0) / filtered.length;
@@ -51,7 +58,6 @@ const StudentScores = () => {
             setStudentAverage(null);
         }
 
-        // Add university average comparison
         const withComparison = filtered.map(score => {
             const universityScores = scores.filter(s => 
                 s.universityName === score.universityName && 
@@ -68,7 +74,6 @@ const StudentScores = () => {
         setFilteredScores(withComparison);
     };
 
-    // Add handler for enter key
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
             handleSearch();
@@ -81,6 +86,10 @@ const StudentScores = () => {
     return (
         <div className="scores-container">
             <h2>Student Program Scores</h2>
+            
+            {studentName && (
+                <h3 className="student-name">Student: {studentName}</h3>
+            )}
             
             <div className="search-container">
                 <input

@@ -10,7 +10,14 @@ function StudentRegister() {
         email: '',
         currentHighSchool: '',
         gradYear: '',
-        biography: ''
+        biography: '',
+        grades: {
+            Biology: '',
+            Chemistry: '',
+            English: '',
+            Math: '',
+            Physics: ''
+        }
     });
     const [highSchools, setHighSchools] = useState([]);
     const [error, setError] = useState('');
@@ -56,7 +63,14 @@ function StudentRegister() {
                     email: '',
                     currentHighSchool: '',
                     gradYear: '',
-                    biography: ''
+                    biography: '',
+                    grades: {
+                        Biology: '',
+                        Chemistry: '',
+                        English: '',
+                        Math: '',
+                        Physics: ''
+                    }
                 });
             } else {
                 setError(data.message || 'Registration failed');
@@ -174,6 +188,36 @@ function StudentRegister() {
                         placeholder="Tell us about yourself..."
                         rows="4"
                     />
+                </div>
+
+                <div className="form-group grades-section">
+                    <h3>High School Grades</h3>
+                    {Object.keys(formData.grades).map((subject) => (
+                        <div key={subject} className="grade-input">
+                            <label>{subject}:</label>
+                            <input
+                                type="number"
+                                name={`grades.${subject}`}
+                                value={formData.grades[subject]}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            grades: {
+                                                ...prev.grades,
+                                                [subject]: value
+                                            }
+                                        }));
+                                    }
+                                }}
+                                min="0"
+                                max="100"
+                                required
+                                className="grade-input"
+                            />
+                        </div>
+                    ))}
                 </div>
 
                 <button type="submit" className="register-button">Register</button>

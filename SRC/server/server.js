@@ -107,7 +107,15 @@ let connection;
 
 app.post('/api/students/register', async (req, res) => {
     try {
-        const { firstName, lastName, email, currentHighSchool, gradYear, biography } = req.body;
+        const { 
+            firstName, 
+            lastName, 
+            email, 
+            currentHighSchool, 
+            gradYear, 
+            biography,
+            grades // New grades object containing the 5 subjects
+        } = req.body;
 
         // Get the last StudentID
         const [lastStudent] = await pool.query('SELECT StudentID FROM student ORDER BY StudentID DESC LIMIT 1');
@@ -128,6 +136,14 @@ app.post('/api/students/register', async (req, res) => {
             [nextStudentId, currentHighSchool, gradYear]
         );
 
+        // Insert grades into highschoolgrade table
+        const gradeInsertQuery = 'INSERT INTO highschoolgrade (StudentID, HighSchoolCourseName, HighSchoolGrade) VALUES ?';
+        const gradeValues = Object.entries(grades).map(([subject, grade]) => 
+            [nextStudentId, subject, Number(grade)]
+        );
+        
+        await pool.query(gradeInsertQuery, [gradeValues]);
+
         // Commit the transaction
         await pool.query('COMMIT');
 
@@ -146,6 +162,8 @@ app.post('/api/students/register', async (req, res) => {
         });
     }
 });
+
+
 
 app.get('/api/highschools', async (req, res) => {
     try {
@@ -316,6 +334,146 @@ app.get('/api/students/university-fit', async (req, res) => {
     }
 });
 
+app.get('/api/student-ratings/:studentId', async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const query = `
+            SELECT StudentExperienceFactor, Rating 
+            FROM studentexperienceweightings 
+            WHERE StudentID = ?
+        `;
+        
+        const [ratings] = await pool.query(query, [studentId]);
+        
+        // Ensure we're sending an array of ratings
+        res.json({
+            success: true,
+            ratings: ratings || [] // If no ratings found, send empty array
+        });
+    } catch (error) {
+        console.error('Error fetching ratings:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to fetch ratings',
+            error: error.message 
+        });
+    }
+});
+
+app.post('/api/student-ratings', async (req, res) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const { studentId, ratings } = req.body;
+
+        // Validate input
+        if (!studentId || !ratings || !Array.isArray(ratings)) {
+            throw new Error('Invalid input data');
+        }
+
+        // Delete existing ratings for this student
+        const deleteQuery = `
+            DELETE FROM studentexperienceweightings 
+            WHERE StudentID = ?
+        `;
+        await connection.query(deleteQuery, [studentId]);
+
+        // Insert new ratings
+        const insertQuery = `
+            INSERT INTO studentexperienceweightings 
+            (StudentID, StudentExperienceFactor, Rating) 
+            VALUES ?
+        `;
+
+        const values = ratings.map(rating => [
+            rating.StudentID,
+            rating.StudentExperienceFactor,
+            rating.Rating
+        ]);
+
+        await connection.query(insertQuery, [values]);
+        await connection.commit();
+        
+        res.json({ 
+            success: true, 
+            message: 'Ratings updated successfully' 
+        });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error('Error updating ratings:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to update ratings',
+            error: error.message 
+        });
+    } finally {
+        connection.release();
+    }
+});
+
+app.put('/api/student-ratings/:studentId/:factor', async (req, res) => {
+    try {
+        const { studentId, factor } = req.params;
+        const { rating } = req.body;
+
+        // Validate rating value
+        if (rating < 1 || rating > 5) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Rating must be between 1 and 5' 
+            });
+        }
+
+        const query = `
+            UPDATE studentexperienceweightings 
+            SET Rating = ? 
+            WHERE StudentID = ? AND StudentExperienceFactor = ?
+        `;
+        
+        await pool.query(query, [rating, studentId, factor]);
+        
+        res.json({ 
+            success: true, 
+            message: 'Rating updated successfully' 
+        });
+
+    } catch (error) {
+        console.error('Error updating single rating:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to update rating',
+            error: error.message 
+        });
+    }
+});
+
+app.delete('/api/student-ratings/:studentId', async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        
+        const query = `
+            DELETE FROM studentexperienceweightings 
+            WHERE StudentID = ?
+        `;
+        
+        await pool.query(query, [studentId]);
+        
+        res.json({ 
+            success: true, 
+            message: 'Ratings deleted successfully' 
+        });
+
+    } catch (error) {
+        console.error('Error deleting ratings:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to delete ratings',
+            error: error.message 
+        });
+    }
+});
+
 // Initialize database and start server
 async function startServer() {
     try {
@@ -335,39 +493,6 @@ async function startServer() {
 
        
 
-        app.get('/api/admin/search-student', async (req, res) => {
-            try {
-                const { term, type } = req.query;
-                
-                // Fixed SQL syntax by removing trailing comma
-                const query = `
-                    SELECT 
-                        StudentID,
-                        FirstName,
-                        LastName,
-                        Address
-                        
-                    FROM student
-                    WHERE ${type === 'id' ? 'StudentID = ?' : "CONCAT(FirstName, ' ', LastName) LIKE ?"}
-                `;
-
-                const searchValue = type === 'id' ? term : `%${term}%`;
-                
-                const [students] = await pool.query(query, [searchValue]);
-
-                res.json({
-                    success: true,
-                    students: students.length > 0 ? students : []
-                });
-
-            } catch (error) {
-                console.error('Search error:', error);
-                res.status(500).json({
-                    success: false,
-                    message: 'Error searching for students'
-                });
-            }
-        });
 
         // Get all universities with their student count
         app.get('/api/universities', async (req, res) => {

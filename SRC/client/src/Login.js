@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import './Login.css';
 import { Link } from 'react-router-dom';
-import StudentScores from './components/StudentScores';
-import StudentSearch from './components/StudentSearch';
-import UniversityGrades from './components/UniversityGrades';
+import StudentScores from './StudentScores';
+import StudentSearch from './StudentSearch';
+import UniversityGrades from './UniversityGrades';
+import AdminPanel from './AdminPanel';
 
 function Login() {
     const [activeTab, setActiveTab] = useState('ratings'); // 'ratings', 'register', or 'students'
@@ -30,10 +31,10 @@ function Login() {
                     Students
                 </button>
                 <button 
-                    className={activeTab === 'universities' ? 'active' : ''}
-                    onClick={() => setActiveTab('universities')}
+                    className={activeTab === 'admin' ? 'active' : ''}
+                    onClick={() => setActiveTab('admin')}
                 >
-                    Universities
+                    Admin
                 </button>
             </div>
 
@@ -59,9 +60,10 @@ function Login() {
                     </div>
                 )}
 
-                {activeTab === 'universities' && (
-                    <div className="universities-section">
-                        <UniversityGrades />
+                {activeTab === 'admin' && (
+                    <div className="admin-section">
+                        <h2>Admin Panel</h2>
+                        <AdminPanel />
                     </div>
                 )}
             </div>

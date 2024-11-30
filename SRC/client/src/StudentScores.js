@@ -9,6 +9,8 @@ const StudentScores = () => {
     const [filteredScores, setFilteredScores] = useState([]);
     const [studentAverage, setStudentAverage] = useState(null);
     const [studentName, setStudentName] = useState('');
+    const [showTopStudents, setShowTopStudents] = useState(false);
+    const [topStudents, setTopStudents] = useState([]);
 
     useEffect(() => {
         fetchScores();
@@ -29,6 +31,22 @@ const StudentScores = () => {
             setError('Error connecting to server');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchTopStudents = async () => {
+        try {
+            const response = await fetch('http://localhost:3001/api/top-students');
+            const data = await response.json();
+            
+            if (data.success) {
+                setTopStudents(data.topStudents);
+                setShowTopStudents(true);
+            } else {
+                setError('Failed to load top students');
+            }
+        } catch (err) {
+            setError('Error connecting to server');
         }
     };
 
@@ -103,8 +121,47 @@ const StudentScores = () => {
                 <button onClick={handleSearch} className="search-button">
                     Search
                 </button>
-              
+                <button 
+                    onClick={fetchTopStudents} 
+                    className="top-students-button"
+                >
+                    View Top Students (90%+ Average)
+                </button>
             </div>
+
+            {showTopStudents && topStudents.length > 0 && (
+                <div className="top-students-container">
+                    <h3>Top Performing Students (90%+ Average)</h3>
+                    <table className="scores-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>University</th>
+                                <th>Program</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {topStudents.map((student) => (
+                                <tr key={`${student.StudentID}-${student.UniversityName}`}>
+                                    <td>{student.StudentID}</td>
+                                    <td>{student.firstName}</td>
+                                    <td>{student.lastName}</td>
+                                    <td>{student.UniversityName}</td>
+                                    <td>{student.ProgramName}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <button 
+                        onClick={() => setShowTopStudents(false)} 
+                        className="close-button"
+                    >
+                        Close Top Students View
+                    </button>
+                </div>
+            )}
 
             <div className="scores-table-container">
                 <table className="scores-table">

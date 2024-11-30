@@ -15,7 +15,7 @@ app.use(express.json());
 const pool = mysql.createPool({
     host: 'localhost',
     user: 'root',     // Your MySQL username
-    password: '',     // Your MySQL password
+    password: 'Sharkbear7',     // Your MySQL password
     database: 'databaselab',
     waitForConnections: true,
     connectionLimit: 10,
@@ -470,6 +470,43 @@ app.delete('/api/student-ratings/:studentId', async (req, res) => {
             success: false, 
             message: 'Failed to delete ratings',
             error: error.message 
+        });
+    }
+});
+
+// Add this new endpoint
+app.get('/api/top-students', async (req, res) => {
+    try {
+        const query = `
+            SELECT
+                s.StudentID,
+                s.firstName,
+                s.lastName,
+                us.UniversityName,
+                us.ProgramName
+            FROM
+                Student s
+            JOIN 
+                UniversityStudent us ON s.StudentID = us.StudentID
+            WHERE EXISTS (
+                SELECT 1
+                FROM HighSchoolGrade hg
+                WHERE hg.StudentID = s.StudentID
+                GROUP BY us.UniversityName, us.ProgramName
+                HAVING AVG(hg.HighSchoolGrade) > 90
+            )`;
+        
+        const [results] = await pool.query(query);
+        res.json({
+            success: true,
+            topStudents: results
+        });
+    } catch (error) {
+        console.error('Error fetching top students:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch top students',
+            error: error.message
         });
     }
 });

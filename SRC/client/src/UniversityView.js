@@ -7,6 +7,9 @@ function UniversityView() {
     const [studentCount, setStudentCount] = useState(null);
     const [programs, setPrograms] = useState([]);
     const [error, setError] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [showLoginForm, setShowLoginForm] = useState(false);
+    const [loginCredentials, setLoginCredentials] = useState({ username: '', password: '' });
 
     useEffect(() => {
         fetchUniversities();
@@ -51,8 +54,67 @@ function UniversityView() {
         }
     };
 
+    const handleLogin = (e) => {
+        e.preventDefault();
+        if (loginCredentials.username === 'admin' && loginCredentials.password === 'admin') {
+            setIsAdmin(true);
+            setShowLoginForm(false);
+        } else {
+            setError('Invalid credentials');
+        }
+    };
+
+    const handleLogout = () => {
+        setIsAdmin(false);
+        setLoginCredentials({ username: '', password: '' });
+    };
+
     return (
         <div className="university-view">
+            <div className="admin-section">
+                {!isAdmin ? (
+                    <button 
+                        className="admin-button"
+                        onClick={() => setShowLoginForm(!showLoginForm)}
+                    >
+                        Admin Login
+                    </button>
+                ) : (
+                    <button 
+                        className="admin-button"
+                        onClick={handleLogout}
+                    >
+                        Logout
+                    </button>
+                )}
+            </div>
+
+            {showLoginForm && !isAdmin && (
+                <div className="login-form">
+                    <form onSubmit={handleLogin}>
+                        <input
+                            type="text"
+                            placeholder="Username"
+                            value={loginCredentials.username}
+                            onChange={(e) => setLoginCredentials({
+                                ...loginCredentials,
+                                username: e.target.value
+                            })}
+                        />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={loginCredentials.password}
+                            onChange={(e) => setLoginCredentials({
+                                ...loginCredentials,
+                                password: e.target.value
+                            })}
+                        />
+                        <button type="submit">Login</button>
+                    </form>
+                </div>
+            )}
+
             <h2>Universities</h2>
             
             <div className="university-selector">

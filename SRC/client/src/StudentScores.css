@@ -59,4 +59,39 @@
     .scores-table td {
         padding: 8px;
     }
+}
+
+.top-students-button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.top-students-button:hover {
+    background-color: #357abd;
+}
+
+.top-students-container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+.close-button {
+    background-color: #666;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.close-button:hover {
+    background-color: #555;
 } 

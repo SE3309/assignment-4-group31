@@ -117,4 +117,77 @@
 
 .delete-button:hover {
     background-color: #c82333;
+}
+
+.university-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-edit-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.admin-edit-btn:hover {
+    background-color: #0056b3;
+}
+
+.admin-section {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.admin-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.admin-button:hover {
+    background-color: #0056b3;
+}
+
+.login-form {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.login-form input {
+    display: block;
+    margin-bottom: 10px;
+    padding: 8px;
+    width: 200px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.login-form button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.login-form button:hover {
+    background-color: #218838;
 } 

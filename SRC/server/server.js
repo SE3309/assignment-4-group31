@@ -563,12 +563,12 @@ app.get('/api/students/:studentId/similar-grades', async (req, res) => {
             SELECT 
                 sg.StudentID,
                 au.UniversityName,
-                ROUND(au.AvgUniversityHighSchoolGrade - sg.AvgStudentGrade, 2) AS GradeDifference,
+                ROUND(sg.AvgStudentGrade - au.AvgUniversityHighSchoolGrade, 2) AS GradeDifference,
                 ROUND(au.AvgUniversityHighSchoolGrade, 2) AS UniversityAvg,
                 ROUND(sg.AvgStudentGrade, 2) AS StudentAvg
             FROM StudentGrades sg
             CROSS JOIN AllUniversityAvgs au
-            ORDER BY ABS(au.AvgUniversityHighSchoolGrade - sg.AvgStudentGrade) ASC
+            ORDER BY ABS(sg.AvgStudentGrade - au.AvgUniversityHighSchoolGrade) ASC
             LIMIT 10;
         `;
 

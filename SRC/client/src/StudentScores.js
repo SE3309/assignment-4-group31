@@ -187,7 +187,6 @@ const StudentScores = () => {
                             <th>University</th>
                             <th>Score</th>
                             <th>University Average Score (All Students)</th>
-                            <th>Grade Difference</th>
                             <th>Tuition ($)</th>
                         </tr>
                     </thead>
@@ -199,19 +198,6 @@ const StudentScores = () => {
                                 <td>{score.universityName}</td>
                                 <td>{score.MaxScore ? Number(score.MaxScore).toFixed(2) : 'N/A'}</td>
                                 <td>{score.universityAvg ? score.universityAvg.toFixed(2) : 'N/A'}</td>
-                                <td style={{ 
-                                    color: score.MaxScore && score.universityAvg
-                                        ? Number(score.MaxScore) - score.universityAvg > 0 
-                                            ? 'green' 
-                                            : Number(score.MaxScore) - score.universityAvg < 0
-                                                ? 'red'
-                                                : 'inherit'
-                                        : 'inherit'
-                                }}>
-                                    {score.MaxScore && score.universityAvg 
-                                        ? (Number(score.MaxScore) - score.universityAvg).toFixed(2) 
-                                        : 'N/A'}
-                                </td>
                                 <td>{score.tuition ? Number(score.tuition).toLocaleString() : 'N/A'}</td>
                             </tr>
                         ))}

@@ -539,6 +539,63 @@ app.get('/api/programs/:universityName/:programName/tuition', async (req, res) =
     }
 });
 
+app.get('/api/students/:studentId/similar-grades', async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        
+        const query = `
+            WITH StudentGrades AS (
+                SELECT 
+                    StudentID, 
+                    AVG(HighSchoolGrade) AS AvgStudentGrade
+                FROM HighSchoolGrade
+                WHERE StudentID = ?
+                GROUP BY StudentID
+            ),
+            AllUniversityAvgs AS (
+                SELECT 
+                    UniversityName,
+                    AVG(hg.HighSchoolGrade) AS AvgUniversityHighSchoolGrade
+                FROM UniversityStudent us
+                JOIN HighSchoolGrade hg ON us.StudentID = hg.StudentID
+                GROUP BY UniversityName
+            )
+            SELECT 
+                sg.StudentID,
+                au.UniversityName,
+                ROUND(au.AvgUniversityHighSchoolGrade - sg.AvgStudentGrade, 2) AS GradeDifference,
+                ROUND(au.AvgUniversityHighSchoolGrade, 2) AS UniversityAvg,
+                ROUND(sg.AvgStudentGrade, 2) AS StudentAvg
+            FROM StudentGrades sg
+            CROSS JOIN AllUniversityAvgs au
+            ORDER BY ABS(au.AvgUniversityHighSchoolGrade - sg.AvgStudentGrade) ASC
+            LIMIT 10;
+        `;
+
+        const [results] = await pool.query(query, [studentId]);
+
+        if (results.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No similar grades found or student not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            results: results
+        });
+
+    } catch (error) {
+        console.error('Error fetching similar grades:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching similar grades',
+            error: error.message
+        });
+    }
+});
+
 // Initialize database and start server
 async function startServer() {
     try {

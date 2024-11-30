@@ -80,4 +80,45 @@ th {
 
 .delete-btn:hover {
     background-color: #c82333;
+}
+
+.universities-list table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.universities-list th,
+.universities-list td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.universities-list input {
+    width: 100px;
+    padding: 5px;
+}
+
+.edit-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.edit-btn:hover {
+    background-color: #45a049;
+}
+
+.error {
+    color: red;
+    margin: 10px 0;
+}
+
+.loading {
+    margin: 10px 0;
+    color: #666;
 } 

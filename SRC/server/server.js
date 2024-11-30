@@ -511,6 +511,34 @@ app.get('/api/top-students', async (req, res) => {
     }
 });
 
+app.get('/api/programs/:universityName/:programName/tuition', async (req, res) => {
+    try {
+        const { universityName, programName } = req.params;
+        const [result] = await pool.query(
+            'SELECT tuition FROM program WHERE universityName = ? AND programName = ?',
+            [universityName, programName]
+        );
+
+        if (result.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Program not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            tuition: result[0].tuition
+        });
+    } catch (error) {
+        console.error('Error fetching tuition:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching tuition'
+        });
+    }
+});
+
 // Initialize database and start server
 async function startServer() {
     try {
@@ -535,12 +563,9 @@ async function startServer() {
         app.get('/api/universities', async (req, res) => {
             try {
                 const [universities] = await pool.query(
-                    'SELECT UniversityName, NumOfStudents FROM university ORDER BY UniversityName'
+                    'SELECT universityName, city, numOfStudents FROM university ORDER BY universityName'
                 );
-                res.json({
-                    success: true,
-                    universities
-                });
+                res.json(universities);
             } catch (error) {
                 console.error('Error fetching universities:', error);
                 res.status(500).json({
@@ -617,6 +642,110 @@ async function startServer() {
                 res.status(500).json({
                     success: false,
                     message: 'Error searching for students'
+                });
+            }
+        });
+
+        // Add new endpoint to update university tuition
+        app.put('/api/universities/:universityName', async (req, res) => {
+            const connection = await pool.getConnection();
+            try {
+                const { universityName } = req.params;
+                const { tuition } = req.body;
+
+                // Input validation
+                if (!tuition || isNaN(tuition) || tuition < 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Invalid tuition value'
+                    });
+                }
+
+                await connection.beginTransaction();
+
+                const [result] = await connection.query(
+                    'UPDATE university SET tuition = ? WHERE universityName = ?',
+                    [tuition, universityName]
+                );
+
+                if (result.affectedRows === 0) {
+                    await connection.rollback();
+                    return res.status(404).json({
+                        success: false,
+                        message: 'University not found'
+                    });
+                }
+
+                await connection.commit();
+
+                res.json({
+                    success: true,
+                    message: 'University tuition updated successfully'
+                });
+
+            } catch (error) {
+                await connection.rollback();
+                console.error('Error updating university tuition:', error);
+                res.status(500).json({
+                    success: false,
+                    message: 'Error updating university tuition'
+                });
+            } finally {
+                connection.release();
+            }
+        });
+
+        // Get programs for a specific university
+        app.get('/api/programs/:universityName', async (req, res) => {
+            try {
+                const [programs] = await pool.query(
+                    'SELECT programName, degree, programLength, tuition FROM program WHERE universityName = ?',
+                    [req.params.universityName]
+                );
+                res.json(programs);
+            } catch (error) {
+                console.error('Error fetching programs:', error);
+                res.status(500).json({
+                    success: false,
+                    message: 'Error fetching programs'
+                });
+            }
+        });
+
+        // Update program tuition
+        app.put('/api/programs/:universityName/:programName', async (req, res) => {
+            const { universityName, programName } = req.params;
+            const { tuition } = req.body;
+
+            if (!tuition || isNaN(tuition) || tuition < 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid tuition value'
+                });
+            }
+
+            try {
+                const [result] = await pool.query(
+                    'UPDATE program SET tuition = ? WHERE universityName = ? AND programName = ?',
+                    [tuition, universityName, programName]
+                );
+
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Program not found'
+                    });
+                }
+
+                res.json({
+                    success: true,
+                    message: 'Tuition updated successfully'
+                });
+            } catch (error) {
+                console.error('Error updating tuition:', error);
+                res.status(500).json({
+                    success: false,
+                    message: 'Error updating tuition'
                 });
             }
         });

@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './Login';
-import Admin from './Admin';
 import StudentRegister from './StudentRegister';
 
 function App() {
@@ -15,15 +14,14 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
+    <Router>
       <div className="App">
         <Routes>
           <Route path="/" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-          <Route path="/admin" element={<Admin />} />
           <Route path="/register" element={<StudentRegister />} />
         </Routes>
       </div>
-    </BrowserRouter>
+    </Router>
   );
 }
 

@@ -35,9 +35,6 @@ async function initializeDatabase() {
             '../../DUMP/databaselab_program.sql',
             '../../DUMP/databaselab_course.sql',
             '../../DUMP/databaselab_highschoolstudent.sql',
-            
-            // Tables with foreign key dependencies
-        
             '../../DUMP/databaselab_universitystudent.sql',
             '../../DUMP/databaselab_highschoolgrade.sql',
             '../../DUMP/databaselab_studentexperience.sql',
@@ -169,33 +166,161 @@ app.get('/api/highschools', async (req, res) => {
     }
 });
 
+
+
+app.get('/api/student-scores', async (req, res) => {
+    try {
+        const studentScoresQuery = `
+            WITH WeightedScores AS (
+                SELECT
+                    se.programName,
+                    se.universityName,
+                    sew.StudentID,
+                    SUM(
+                        CASE sew.StudentExperienceFactor
+                            WHEN 'careerRating' THEN sew.Rating * se.careerRating
+                            WHEN 'facilitiesRating' THEN sew.Rating * se.facilitiesRating
+                            WHEN 'learningEnviroRating' THEN sew.Rating * se.learningEnviroRating
+                            WHEN 'scholarshipsRating' THEN sew.Rating * se.scholarshipsRating
+                            WHEN 'studentSatisfactionRating' THEN sew.Rating * se.studentSatisfactionRating
+                            ELSE 0
+                        END
+                    ) AS WeightedScore
+                FROM
+                    StudentExperienceWeightings sew
+                JOIN
+                    StudentExperience se
+                ON sew.StudentExperienceFactor IN (
+                    'careerRating', 'facilitiesRating', 'learningEnviroRating', 
+                    'scholarshipsRating', 'studentSatisfactionRating'
+                )
+                GROUP BY
+                    sew.StudentID, se.programName, se.universityName
+            )
+            SELECT
+                StudentID,
+                programName,
+                universityName,
+                WeightedScore AS MaxScore
+            FROM WeightedScores
+            ORDER BY WeightedScore DESC;
+        `;
+
+        const [results] = await pool.query(studentScoresQuery);
+        res.json({
+            success: true,
+            scores: results
+        });
+    } catch (error) {
+        console.error('Error fetching student scores:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch student scores'
+        });
+    }
+});
+
+app.get('/api/universities/grades', async (req, res) => {
+    try {
+        const query = `
+            WITH AvgGradeOfStudents AS (
+                SELECT 
+                    us.UniversityName,
+                    AVG(hg.HighSchoolGrade) AS AvgUniversityHighSchoolGrade
+                FROM UniversityStudent us
+                JOIN HighSchoolGrade hg ON us.StudentID = hg.StudentID
+                GROUP BY us.UniversityName
+            )
+            SELECT 
+                UniversityName,
+                ROUND(AvgUniversityHighSchoolGrade, 2) as AvgGrade
+            FROM AvgGradeOfStudents
+            ORDER BY AvgUniversityHighSchoolGrade DESC;
+        `;
+
+        const [results] = await pool.query(query);
+        
+        res.json({
+            success: true,
+            universities: results
+        });
+    } catch (error) {
+        console.error('Error fetching university grades:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching university data'
+        });
+    }
+});
+
+app.get('/api/students/university-fit', async (req, res) => {
+    try {
+        const { studentId, universityId } = req.query;
+        
+        const query = `
+            WITH StudentAvg AS (
+                SELECT 
+                    StudentID,
+                    AVG(HighSchoolGrade) AS AvgStudentGrade
+                FROM HighSchoolGrade
+                WHERE StudentID = ?
+                GROUP BY StudentID
+            ),
+            UnivAvg AS (
+                SELECT 
+                    u.UniversityID,
+                    u.UniversityName,
+                    AVG(hg.HighSchoolGrade) AS AvgUniversityHighSchoolGrade
+                FROM University u
+                LEFT JOIN UniversityStudent us ON u.UniversityID = us.UniversityID
+                LEFT JOIN HighSchoolGrade hg ON us.StudentID = hg.StudentID
+                GROUP BY u.UniversityID, u.UniversityName
+            )
+            SELECT 
+                sa.StudentID,
+                ua.UniversityID,
+                ua.UniversityName,
+                ROUND(sa.AvgStudentGrade, 2) as StudentAverage,
+                ROUND(ua.AvgUniversityHighSchoolGrade, 2) as UniversityAverage,
+                ROUND(
+                    (sa.AvgStudentGrade - ua.AvgUniversityHighSchoolGrade), 
+                    2
+                ) AS GradeDifference
+            FROM StudentAvg sa
+            CROSS JOIN UnivAvg ua
+            ${universityId ? 'WHERE ua.UniversityID = ?' : ''}
+            ORDER BY GradeDifference DESC;
+        `;
+
+        const params = universityId ? [studentId, universityId] : [studentId];
+        const [results] = await pool.query(query, params);
+        
+        // Ensure numbers are properly formatted
+        const formattedResults = results.map(match => ({
+            ...match,
+            StudentAverage: parseFloat(match.StudentAverage),
+            UniversityAverage: parseFloat(match.UniversityAverage),
+            GradeDifference: parseFloat(match.GradeDifference)
+        }));
+
+        res.json({
+            success: true,
+            matches: formattedResults
+        });
+    } catch (error) {
+        console.error('Error fetching university matches:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching university matches'
+        });
+    }
+});
+
 // Initialize database and start server
 async function startServer() {
     try {
         connection = await initializeDatabase();
-        
-        // Student verification endpoint
-        app.get('/api/verify-student/:id', async (req, res) => {
-            try {
-                const [rows] = await pool.query(
-                    'SELECT * FROM student WHERE StudentID = ?',
-                    [req.params.id]
-                );
-                
-                console.log('Student verification result:', rows);
-                
-                res.json({
-                    exists: rows.length > 0,
-                    student: rows.length > 0 ? rows[0] : null
-                });
-            } catch (error) {
-                console.error('Error verifying student:', error);
-                res.status(500).json({
-                    error: 'Error verifying student',
-                    details: error.message
-                });
-            }
-        });
+
 
         // Add an endpoint to get all students
         app.get('/api/students', async (req, res) => {
@@ -208,23 +333,7 @@ async function startServer() {
             }
         });
 
-        // Replace or add this endpoint
-        app.post('/api/verify-admin', (req, res) => {
-            const { adminId, password } = req.body;
-            
-            // Simple hardcoded check
-            if (adminId === 'admin' && password === 'admin') {
-                res.json({
-                    success: true,
-                    admin: { id: 'admin' }
-                });
-            } else {
-                res.json({
-                    success: false,
-                    message: 'Invalid credentials'
-                });
-            }
-        });
+       
 
         app.get('/api/admin/search-student', async (req, res) => {
             try {
@@ -296,6 +405,56 @@ async function startServer() {
                 res.status(500).json({
                     success: false,
                     message: 'Error fetching programs'
+                });
+            }
+        });
+
+        app.get('/api/students/search', async (req, res) => {
+            try {
+                const { term, type } = req.query;
+                
+                let query;
+                let searchValue;
+
+                if (!term.trim()) {
+                    // If search term is empty, return all students
+                    query = `
+                        SELECT 
+                            StudentID,
+                            FirstName,
+                            LastName,
+                            Address
+                        FROM student
+                        ORDER BY StudentID
+                    `;
+                    searchValue = [];
+                } else {
+                    // If search term exists, filter by term and type
+                    query = `
+                        SELECT 
+                            StudentID,
+                            FirstName,
+                            LastName,
+                            Address
+                        FROM student
+                        WHERE ${type === 'id' ? 'StudentID = ?' : "CONCAT(FirstName, ' ', LastName) LIKE ?"}
+                        ORDER BY StudentID
+                    `;
+                    searchValue = [type === 'id' ? term : `%${term}%`];
+                }
+                
+                const [students] = await pool.query(query, searchValue);
+
+                res.json({
+                    success: true,
+                    students: students
+                });
+
+            } catch (error) {
+                console.error('Search error:', error);
+                res.status(500).json({
+                    success: false,
+                    message: 'Error searching for students'
                 });
             }
         });

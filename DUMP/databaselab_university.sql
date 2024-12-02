@@ -36,7 +36,22 @@ CREATE TABLE `university` (
 
 LOCK TABLES `university` WRITE;
 /*!40000 ALTER TABLE `university` DISABLE KEYS */;
-INSERT INTO `university` VALUES ('Harvard University','Cambridge, MA',4123),('Massachusetts Institute of Technology','Cambridge, MA',4000),('McGill University','Montreal',40000),('Stanford University','Stanford, CA',1313),('University of Cambridge','Cambridge, UK',65644),('University of Oxford','Oxford, UK',2000),('University of Toronto','Toronto',60000),('University of Waterloo','Waterloo',36000);
+INSERT INTO `university` VALUES ('Harvard University','Cambridge, MA',4123),
+  ('Massachusetts Institute of Technology','Cambridge, MA',4000),('McGill University','Montreal',40000),
+  ('Stanford University','Stanford, CA',1313),('University of Cambridge','Cambridge, UK',65644),
+  ('University of Oxford','Oxford, UK',2000),
+  ('University of Toronto','Toronto',60000),
+  ('University of Waterloo','Waterloo',36000), 
+  ('California Institute of Technology', 'Pasadena, CA', 2233),
+  ('Princeton University', 'Princeton, NJ', 8200),
+  ('University of Chicago', 'Chicago, IL', 15000),
+  ('Yale University', 'New Haven, CT', 14500),
+  ('Columbia University', 'New York, NY', 31000),
+  ('University of California, Berkeley', 'Berkeley, CA', 42000),
+  ('University of British Columbia', 'Vancouver, BC', 56000),
+  ('University of Edinburgh', 'Edinburgh, UK', 30000),
+  ('Australian National University', 'Canberra, Australia', 25000),
+  ('University of Melbourne', 'Melbourne, Australia', 47000);
 /*!40000 ALTER TABLE `university` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

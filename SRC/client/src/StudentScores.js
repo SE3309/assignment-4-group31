@@ -58,53 +58,62 @@ const StudentScores = () => {
             return;
         }
 
-        const filtered = scores.filter(score => 
-            score.StudentID.toString() === studentId.trim()
-        );
-        
-        if (filtered.length > 0) {
-            setStudentName(filtered[0].StudentName || 'Name Not Available');
-        } else {
-            setStudentName('');
-        }
-
-        if (filtered.length > 0) {
-            const avgScore = filtered.reduce((acc, curr) => 
-                acc + Number(curr.MaxScore), 0) / filtered.length;
-            setStudentAverage(avgScore);
-        } else {
-            setStudentAverage(null);
-        }
-
-        const withComparisonAndTuition = await Promise.all(filtered.map(async score => {
-            const universityScores = scores.filter(s => 
-                s.universityName === score.universityName && 
-                s.programName === score.programName
-            );
-            const avgScore = universityScores.reduce((acc, curr) => 
-                acc + Number(curr.MaxScore), 0) / universityScores.length;
+        try {
+            // First fetch student details
+            const studentResponse = await fetch(`http://localhost:3001/api/students/search?term=${studentId}&type=id`);
+            const studentData = await studentResponse.json();
             
-            try {
-                const response = await fetch(
-                    `http://localhost:3001/api/programs/${encodeURIComponent(score.universityName)}/${encodeURIComponent(score.programName)}/tuition`
-                );
-                const data = await response.json();
-                return {
-                    ...score,
-                    universityAvg: avgScore,
-                    tuition: data.success ? data.tuition : 'N/A'
-                };
-            } catch (err) {
-                console.error('Error fetching tuition:', err);
-                return {
-                    ...score,
-                    universityAvg: avgScore,
-                    tuition: 'N/A'
-                };
+            if (studentData.success && studentData.students.length > 0) {
+                const student = studentData.students[0];
+                setStudentName(`${student.FirstName} ${student.LastName}`);
+            } else {
+                setStudentName('Student Not Found');
             }
-        }));
-        
-        setFilteredScores(withComparisonAndTuition);
+
+            const filtered = scores.filter(score => 
+                score.StudentID.toString() === studentId.trim()
+            );
+
+            if (filtered.length > 0) {
+                const avgScore = filtered.reduce((acc, curr) => 
+                    acc + Number(curr.MaxScore), 0) / filtered.length;
+                setStudentAverage(avgScore);
+            } else {
+                setStudentAverage(null);
+            }
+
+            const withComparisonAndTuition = await Promise.all(filtered.map(async score => {
+                const universityScores = scores.filter(s => 
+                    s.universityName === score.universityName && 
+                    s.programName === score.programName
+                );
+                const avgScore = universityScores.reduce((acc, curr) => 
+                    acc + Number(curr.MaxScore), 0) / universityScores.length;
+                
+                try {
+                    const response = await fetch(
+                        `http://localhost:3001/api/programs/${encodeURIComponent(score.universityName)}/${encodeURIComponent(score.programName)}/tuition`
+                    );
+                    const data = await response.json();
+                    return {
+                        ...score,
+                        universityAvg: avgScore,
+                        tuition: data.success ? data.tuition : 'N/A'
+                    };
+                } catch (err) {
+                    console.error('Error fetching tuition:', err);
+                    return {
+                        ...score,
+                        universityAvg: avgScore,
+                        tuition: 'N/A'
+                    };
+                }
+            }));
+            
+            setFilteredScores(withComparisonAndTuition);
+        } catch (err) {
+            setError('Error connecting to server');
+        }
     };
 
     const handleKeyPress = (e) => {

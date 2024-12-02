@@ -204,7 +204,7 @@ const StudentSearch = () => {
                                                     onClick={() => handleShowSimilarGrades(student.StudentID)}
                                                     className="similar-grades-btn"
                                                 >
-                                                    Show Similar Universities
+                                                    Compare Grades
                                                 </button>
                                             </td>
                                         </tr>

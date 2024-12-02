@@ -9,6 +9,9 @@ function AdminPanel() {
     const [selectedUniversity, setSelectedUniversity] = useState(null);
     const [editingProgram, setEditingProgram] = useState(null);
     const [newTuition, setNewTuition] = useState('');
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
 
     useEffect(() => {
         handleLoadUniversities();
@@ -68,6 +71,45 @@ function AdminPanel() {
             console.error('Error updating tuition:', err);
         }
     };
+
+    const handleLogin = (e) => {
+        e.preventDefault();
+        if (username === 'admin' && password === 'admin') {
+            setIsLoggedIn(true);
+        } else {
+            setError('Invalid credentials');
+        }
+    };
+
+    if (!isLoggedIn) {
+        return (
+            <div className="admin-panel">
+                <div className="login-container">
+                    <h2>Admin Login</h2>
+                    <form onSubmit={handleLogin}>
+                        <div className="form-group">
+                            <label>Username:</label>
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Password:</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                        </div>
+                        {error && <div className="error">{error}</div>}
+                        <button type="submit">Login</button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="admin-panel">

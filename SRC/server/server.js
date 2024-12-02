@@ -185,7 +185,6 @@ app.get('/api/highschools', async (req, res) => {
 });
 
 
-
 app.get('/api/student-scores', async (req, res) => {
     try {
         const studentScoresQuery = `
@@ -539,7 +538,7 @@ app.get('/api/programs/:universityName/:programName/tuition', async (req, res) =
     }
 });
 
-app.get('/api/students/:studentId/similar-grades', async (req, res) => {
+app.get('/api/students/:studentId/similar-grades', async (req, res) => { 
     try {
         const { studentId } = req.params;
         
